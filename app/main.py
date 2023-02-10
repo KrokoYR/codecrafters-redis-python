@@ -7,9 +7,12 @@ def main():
     print("Logs from your program will appear here!")
 
     # Uncomment this to pass the first stage
-    server_socket = socket.create_server(("localhost", 6379), reuse_port=True)
+    server_socket = socket.create_server(("0.0.0.0", 6379), reuse_port=True)
+    server_socket.listen(1)
+
     connection, address = server_socket.accept()
-    with connection:
+    while True:
+        connection.recv(1024).decode('utf-8')
         connection.send(b"+PONG\r\n")
 
 
