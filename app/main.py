@@ -1,19 +1,32 @@
-# Uncomment this to pass the first stage
-import socket
+import asyncio
+
+HOST = '0.0.0.0'
+PORT = 6379
+
+
+async def handler(reader, writer):
+    while True:
+        data = await reader.read(1024)
+        if not data:
+            break
+
+        writer.write(b"+PONG\r\n")
+        await writer.drain()
+    writer.close()
+    await writer.wait_closed()
+
+
+async def redis_server():
+    server = await asyncio.start_server(
+        handler, host=HOST, port=PORT, reuse_port=True
+    )
+    async with server:
+        await server.serve_forever()
 
 
 def main():
     # You can use print statements as follows for debugging, they'll be visible when running tests.
-    print("Logs from your program will appear here!")
-
-    # Uncomment this to pass the first stage
-    server_socket = socket.create_server(("0.0.0.0", 6379), reuse_port=True)
-    server_socket.listen(1)
-
-    connection, address = server_socket.accept()
-    while True:
-        connection.recv(1024).decode('utf-8')
-        connection.send(b"+PONG\r\n")
+    asyncio.run(redis_server())
 
 
 if __name__ == "__main__":
